@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF Generator</title>
+  <style>
+    body {
+      background: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #top-text {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    #name-input {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 1em;
+    }
+    #save-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="top-text">hello, haxxy.</div>
+  <img id="gif" src="hello haxxy.gif" alt="GIF" width="300">
+  <div>
+    <input type="text" id="name-input" placeholder="insert name here">
+    <button onclick="updateText()">Update Name</button>
+  </div>
+  <button id="save-btn" onclick="downloadGif()">Save GIF</button>
+
+  <script>
+    function updateText() {
+      const name = document.getElementById("name-input").value;
+      document.getElementById("top-text").textContent = `hello, ${name || 'haxxy'}.`;
+    }
+
+    function downloadGif() {
+      const link = document.createElement('a');
+      link.href = document.getElementById("gif").src;
+      link.download = 'custom_hello.gif';
+      link.click();
+    }
+  </script>
+</body>
+</html>
