@@ -48,14 +48,14 @@
     const saveBtn = document.getElementById('save-btn');
 
     let frames = [];
-    let gifBinary;
     let newGif;
 
     fetch('hello haxxy.gif')
       .then(res => res.arrayBuffer())
       .then(buffer => {
-        gifBinary = window.gifuct.parseGIF(buffer);
-        frames = window.gifuct.decompressFrames(gifBinary, true);
+        const gif = window['@jnordberg/gifuct-js'];
+        const parsed = gif.parseGIF(buffer);
+        frames = gif.decompressFrames(parsed, true);
         if (frames.length > 0) {
           canvas.width = frames[0].dims.width;
           canvas.height = frames[0].dims.height;
@@ -72,6 +72,11 @@
         imageData.data.set(frame.patch);
         ctx.putImageData(imageData, 0, 0);
 
+        // Block out existing text area with a white rectangle
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 10, canvas.width, 30);
+
+        // Draw new text
         ctx.font = '20px Arial';
         ctx.fillStyle = 'black';
         ctx.fillText(`hello, ${name}.`, 10, 30);
