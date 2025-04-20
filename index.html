@@ -26,6 +26,12 @@
       display: block;
       margin: 10px auto;
     }
+    img {
+      margin-top: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 </head>
 <body>
@@ -50,12 +56,13 @@
     let frames = [];
     let newGif;
 
-    fetch('hello haxxy.gif')
+    fetch('https://media.giphy.com/media/26gR0h7POJEd1h9lO/giphy.gif')
       .then(res => res.arrayBuffer())
       .then(buffer => {
         const gif = window['@jnordberg/gifuct-js'];
         const parsed = gif.parseGIF(buffer);
         frames = gif.decompressFrames(parsed, true);
+        console.log(frames);  // Debugging line to check if frames are loaded
         if (frames.length > 0) {
           canvas.width = frames[0].dims.width;
           canvas.height = frames[0].dims.height;
