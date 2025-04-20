@@ -25,6 +25,7 @@
     canvas {
       display: block;
       margin: 10px auto;
+      border: 1px solid black;
     }
     img {
       margin-top: 20px;
@@ -56,54 +57,68 @@
     let frames = [];
     let newGif;
 
-    fetch('https://media.giphy.com/media/26gR0h7POJEd1h9lO/giphy.gif')
+    // Fetch the original "hello haxxy.gif" from a URL or local source
+    fetch('hello haxxy.gif')
       .then(res => res.arrayBuffer())
       .then(buffer => {
         const gif = window['@jnordberg/gifuct-js'];
-        const parsed = gif.parseGIF(buffer);
-        frames = gif.decompressFrames(parsed, true);
-        console.log(frames);  // Debugging line to check if frames are loaded
-        if (frames.length > 0) {
-          canvas.width = frames[0].dims.width;
-          canvas.height = frames[0].dims.height;
+
+        try {
+          const parsed = gif.parseGIF(buffer); // Parse the GIF
+          frames = gif.decompressFrames(parsed, true); // Decompress the frames
+          console.log(frames);  // Log frames for debugging
+          if (frames.length > 0) {
+            canvas.width = frames[0].dims.width;
+            canvas.height = frames[0].dims.height;
+          }
+        } catch (error) {
+          console.error("Error parsing GIF:", error);
         }
+      })
+      .catch(error => {
+        console.error("Fetch or GIF processing error:", error);
       });
 
     generateBtn.addEventListener('click', () => {
       if (!frames || frames.length === 0) return;
-      const name = input.value || 'haxxy';
+      const name = input.value || 'haxxy';  // Default name is 'haxxy' if input is empty
       const gif = new GIF({ workers: 2, quality: 10, width: canvas.width, height: canvas.height });
 
+      // Loop through the frames and add custom text
       frames.forEach(frame => {
-        const imageData = ctx.createImageData(frame.dims.width, frame.dims.height);
-        imageData.data.set(frame.patch);
-        ctx.putImageData(imageData, 0, 0);
+        if (frame.patch && frame.patch.length > 0) {
+          const imageData = ctx.createImageData(frame.dims.width, frame.dims.height);
+          imageData.data.set(frame.patch);
+          ctx.putImageData(imageData, 0, 0);
 
-        // Block out existing text area with a white rectangle
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 10, canvas.width, 30);
+          // Block out the area where the text will be
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 10, canvas.width, 30);
 
-        // Draw new text
-        ctx.font = '20px Arial';
-        ctx.fillStyle = 'black';
-        ctx.fillText(`hello, ${name}.`, 10, 30);
+          // Draw the custom text
+          ctx.font = '20px Arial';
+          ctx.fillStyle = 'black';
+          ctx.fillText(`hello, ${name}.`, 10, 30);
 
-        gif.addFrame(ctx, {copy: true, delay: frame.delay});
+          gif.addFrame(ctx, {copy: true, delay: frame.delay});
+        }
       });
 
+      // Once the gif is finished, display the preview and enable the save button
       gif.on('finished', blob => {
         newGif = blob;
         const url = URL.createObjectURL(blob);
         const preview = document.createElement('img');
         preview.src = url;
         preview.width = 300;
-        document.body.appendChild(preview);
+        document.body.appendChild(preview);  // Display the generated GIF
         saveBtn.disabled = false;
       });
 
       gif.render();
     });
 
+    // Save the generated GIF when the button is clicked
     saveBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.href = URL.createObjectURL(newGif);
