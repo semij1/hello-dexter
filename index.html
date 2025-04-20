@@ -47,19 +47,23 @@
     const generateBtn = document.getElementById('generate-btn');
     const saveBtn = document.getElementById('save-btn');
 
+    let frames = [];
     let gifBinary;
     let newGif;
 
     fetch('hello haxxy.gif')
       .then(res => res.arrayBuffer())
       .then(buffer => {
-        gifBinary = gifuct.parseGIF(buffer);
-        frames = gifuct.decompressFrames(gifBinary, true);
-        canvas.width = frames[0].dims.width;
-        canvas.height = frames[0].dims.height;
+        gifBinary = window.gifuct.parseGIF(buffer);
+        frames = window.gifuct.decompressFrames(gifBinary, true);
+        if (frames.length > 0) {
+          canvas.width = frames[0].dims.width;
+          canvas.height = frames[0].dims.height;
+        }
       });
 
     generateBtn.addEventListener('click', () => {
+      if (!frames || frames.length === 0) return;
       const name = input.value || 'haxxy';
       const gif = new GIF({ workers: 2, quality: 10, width: canvas.width, height: canvas.height });
 
@@ -68,7 +72,6 @@
         imageData.data.set(frame.patch);
         ctx.putImageData(imageData, 0, 0);
 
-        // Draw text over frame
         ctx.font = '20px Arial';
         ctx.fillStyle = 'black';
         ctx.fillText(`hello, ${name}.`, 10, 30);
