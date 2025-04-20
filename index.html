@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GIF Generator</title>
+  <title>Custom GIF Editor</title>
   <style>
     body {
       background: white;
@@ -11,47 +11,90 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
-    #top-text {
-      font-size: 2em;
-      margin-bottom: 10px;
-    }
     #name-input {
       margin-top: 20px;
       padding: 10px;
       font-size: 1em;
     }
-    #save-btn {
+    #generate-btn, #save-btn {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 1em;
       cursor: pointer;
     }
     canvas {
-      display: none;
+      display: block;
+      margin: 10px auto;
     }
   </style>
 </head>
 <body>
-  <div id="top-text">hello, haxxy.</div>
-  <img id="gif" src="hello haxxy.gif" alt="GIF" width="300">
-  <div>
-    <input type="text" id="name-input" placeholder="insert name here">
-    <button onclick="updateText()">Update Name</button>
-  </div>
-  <button id="save-btn" onclick="downloadGif()">Save GIF</button>
+  <h2>Insert name for GIF</h2>
+  <input type="text" id="name-input" placeholder="insert name here">
+  <button id="generate-btn">Generate GIF</button>
+  <br>
+  <canvas id="canvas"></canvas>
+  <br>
+  <button id="save-btn" disabled>Save GIF</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gifuct-js/dist/gifuct.min.js"></script>
 
   <script>
-    function updateText() {
-      const name = document.getElementById("name-input").value;
-      document.getElementById("top-text").textContent = `hello, ${name || 'haxxy'}.`;
-    }
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const input = document.getElementById('name-input');
+    const generateBtn = document.getElementById('generate-btn');
+    const saveBtn = document.getElementById('save-btn');
 
-    function downloadGif() {
+    let gifBinary;
+    let newGif;
+
+    fetch('hello haxxy.gif')
+      .then(res => res.arrayBuffer())
+      .then(buffer => {
+        gifBinary = gifuct.parseGIF(buffer);
+        frames = gifuct.decompressFrames(gifBinary, true);
+        canvas.width = frames[0].dims.width;
+        canvas.height = frames[0].dims.height;
+      });
+
+    generateBtn.addEventListener('click', () => {
+      const name = input.value || 'haxxy';
+      const gif = new GIF({ workers: 2, quality: 10, width: canvas.width, height: canvas.height });
+
+      frames.forEach(frame => {
+        const imageData = ctx.createImageData(frame.dims.width, frame.dims.height);
+        imageData.data.set(frame.patch);
+        ctx.putImageData(imageData, 0, 0);
+
+        // Draw text over frame
+        ctx.font = '20px Arial';
+        ctx.fillStyle = 'black';
+        ctx.fillText(`hello, ${name}.`, 10, 30);
+
+        gif.addFrame(ctx, {copy: true, delay: frame.delay});
+      });
+
+      gif.on('finished', blob => {
+        newGif = blob;
+        const url = URL.createObjectURL(blob);
+        const preview = document.createElement('img');
+        preview.src = url;
+        preview.width = 300;
+        document.body.appendChild(preview);
+        saveBtn.disabled = false;
+      });
+
+      gif.render();
+    });
+
+    saveBtn.addEventListener('click', () => {
       const link = document.createElement('a');
-      link.href = document.getElementById("gif").src;
+      link.href = URL.createObjectURL(newGif);
       link.download = 'custom_hello.gif';
       link.click();
-    }
+    });
   </script>
 </body>
 </html>
